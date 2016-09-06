@@ -1,0 +1,205 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`hexagon-card`
+A Hexagon-shaped card
+
+Heavily based upon the code by Brenna O'Brien at https://github.com/brenna/csshexagon (Brenna's website is http://brennaobrien.com)
+
+@demo demo/index.html
+-->
+
+<dom-module id="hexagon-card">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      ::content > * {
+        position: relative;
+        z-index: 3;
+      }
+
+      #hexagon {
+        position: relative;
+        background-position: center;
+      }
+
+      #hexagonAfter {
+        position: absolute;
+        left: 0;
+        z-index: 2;
+        background: inherit;
+      }
+
+      #hextop, #hexbottom {
+        position: absolute;
+        z-index: 1;
+        overflow: hidden;
+        background: inherit;
+      }
+
+      #hextopAfter, #hexbottomAfter {
+        position: absolute;
+        transform-origin: 0 0;
+        background: inherit;
+      }
+      #hextopAfter {
+        background-position: center top;
+      }
+      #hexbottomAfter {
+        background-position: center bottom;
+      }
+    </style>
+
+    <div id="hexagon">
+      <div id="hextop"><div id="hextopAfter"></div></div>
+      <div id="hexbottom"><div id="hexbottomAfter"></div></div>
+
+      <content></content>
+
+      <div id="hexagonAfter"></div>
+    </div>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+      const sqrt2 = Math.sqrt(2);
+      const sqrt3 = Math.sqrt(3);
+      const scaleFactor = Math.tan(30 * Math.PI / 180);
+      const scaleY = 1 / scaleFactor;
+
+      Polymer({
+
+        is: 'hexagon-card',
+
+        properties: {
+          width: {
+            type: Number,
+            value: 300,
+            observer: '_widthChanged'
+          },
+          borderWidth: {
+            type: Number,
+            value: 0.0,
+            observer: '_borderWidthChanged'
+          },
+          borderColor: {
+            type: String,
+            value: 'transparent',
+            observer: '_borderColorChanged'
+          },
+          bgColor: {
+            type: String,
+            value: '#eee',
+            observer: '_backgroundColorChanged'
+          },
+          bgImage: {
+            type: String,
+            value: '',
+            observer: '_backgroundImageChanged'
+          }
+        },
+
+        ready: function() {
+          for (let elm of [this.$.hextop, this.$.hexbottom]) {
+            elm.style.transform = `scaleY(${scaleFactor.toFixed(4)}) rotate(-45deg)`;
+          }
+        },
+
+        _widthChanged: function(newValue, oldValue) {
+          this._computeDimensions(newValue);
+          this._computeHexTopBottom(newValue, this.borderWidth);
+        },
+
+        _borderWidthChanged: function(newValue, oldValue) {
+          this._computeAfterTopOffset(newValue);
+          this._computeHexTopBottom(this.width, newValue);
+          this._computeBorder(newValue, this.borderColor);
+        },
+
+        _borderColorChanged: function(newValue, oldValue) {
+          this._computeBorder(this.borderWidth, newValue);
+        },
+
+        _backgroundColorChanged: function(newValue, oldValue) {
+          this.$.hexagon.style.backgroundColor = newValue;
+        },
+
+        _backgroundImageChanged: function(newValue, oldValue) {
+          this.$.hexagon.style.backgroundImage = `url(${newValue})`;
+        },
+
+        _getHeight: function(width) {
+          return width / sqrt3;
+        },
+
+        _computeAfterTopOffset: function(borderWidth) {
+          var top = (borderWidth * scaleFactor).toFixed(4);
+          this.$.hexagonAfter.style.top = top;
+        },
+
+        _computeDimensions: function(width) {
+          var height = this._getHeight(width);
+          var margin = height / 2;
+
+          var hexagon = this.$.hexagon;
+          hexagon.style.width = `${width}px`;
+          hexagon.style.height = `${height.toFixed(2)}px`;
+          hexagon.style.margin = `${margin.toFixed(2)}px 0`;
+        },
+
+        _computeHexTopBottom: function(width, borderWidth) {
+          var capWidth = width / sqrt2;
+          var left = (width - capWidth) / 2 - borderWidth;
+          var height = this._getHeight(width);
+          var afterWidth = width - (borderWidth * 2);
+          var afterHeight = height - (borderWidth * this.scaleFactor * 2);
+          var offset = (0 - (width / sqrt2 / 2)).toFixed(4);
+          var borderOffset =  borderWidth / sqrt3;
+          var translateY = -this._getHeight(width) / 2 + borderOffset;
+          var bgsize = height * 2 - borderOffset * 4;
+          this.$.hexagon.style.backgroundSize = `auto ${bgsize.toFixed(4)}px`;
+
+          var topElm = this.$.hextop;
+          var bottomElm = this.$.hexbottom;
+          for (let elm of [topElm, bottomElm]) {
+            elm.style.width = `${capWidth.toFixed(2)}px`;
+            elm.style.height = `${capWidth.toFixed(2)}px`;
+            elm.style.left = `${left.toFixed(2)}px`;
+          }
+
+          topElm.style.top = `${offset}px`;
+          bottomElm.style.bottom = `${offset}px`;
+
+          var afterWidth = width - borderWidth * 2;
+          var afterHeight = this._getHeight(width) - borderWidth * scaleFactor * 2;
+          for (let afterElm of [this.$.hextopAfter, this.$.hexbottomAfter]) {
+            afterElm.style.width = `${afterWidth}px`;
+            afterElm.style.height = `${afterHeight}px`;
+            afterElm.style.transform = `rotate(45deg) scaleY(${scaleY.toFixed(4)}) translateY(${translateY.toFixed(4)}px)`;
+          }
+          let afterElm = this.$.hexagonAfter;
+          afterElm.style.width = `${afterWidth}px`;
+          afterElm.style.height = `${afterHeight}px`;
+        },
+
+        _computeBorder: function(width, color) {
+          var border = `solid ${width}px ${color}`;
+
+          var elm = this.$.hextop;
+          elm.style.borderTop = border;
+          elm.style.borderRight = border;
+
+          elm = this.$.hexbottom;
+          elm.style.borderBottom = border;
+          elm.style.borderLeft = border;
+        }
+
+      });
+
+    }());
+  </script>
+</dom-module>
