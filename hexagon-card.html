@@ -78,28 +78,28 @@ Heavily based upon the code by Brenna O'Brien at https://github.com/brenna/csshe
                     bgColor: {
                         type: String,
                         value: '#eee',
-                        observer: 'bgColorChanged'
+                        observer: '_bgColorChanged'
                     },
                     bgImage: {
                         type: String,
                         value: '',
-                        observer: 'bgImageChanged'
+                        observer: '_bgImageChanged'
                     },
                     rotate: {
                         type: Number,
                         value: 0,
-                        observer: 'rotateChanged'
+                        observer: '_rotateChanged'
                     }
                 },
 
-                bgColorChanged: function(newValue, oldValue) {
+                _bgColorChanged: function(newValue, oldValue) {
                     this.$.background.style.backgroundColor = newValue;
                 },
-                bgImageChanged: function(newValue, oldValue) {
+                _bgImageChanged: function(newValue, oldValue) {
                     this.$.background.style.backgroundImage = `url(${newValue})`;
                 },
 
-                rotateChanged: function(newValue, oldValue) {
+                _rotateChanged: function(newValue, oldValue) {
                     this.$.hexa.style.transform = `rotate(${newValue + 120}deg)`;
                     this.$.bgRotater.style.transform = `rotate(${-newValue}deg) translateY(-7%)`;
                 }
