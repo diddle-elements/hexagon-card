@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-
+<link rel="import" href="../proportional-height-box/proportional-height-box.html">
 <!--
 `hexagon-card`
 A Hexagon-shaped card
@@ -10,196 +10,102 @@ Heavily based upon the code by Brenna O'Brien at https://github.com/brenna/csshe
 -->
 
 <dom-module id="hexagon-card">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
+    <template>
+        <style>
+            :host {
+                display: block;
+                overflow: hidden;
+            }
+            ::content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+            }
 
-      ::content > * {
-        position: relative;
-        z-index: 3;
-      }
+            #hexa.hexa, .hex1, .hex2, .hex3, .hex4 {
+                margin: 0 auto;
+                transform-origin: 50% 50%;
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+            }
+            #hexa.hexa {
+                height: 86.2%;
+                will-change: transform;
+            }
+            .hex1 {
+                transform: rotate(-60deg);
+            }
+            .hex2 {
+                transform: rotate(-60deg);
+            }
+            .hex3 {
+                will-change: transform;
+                height: 116%;
+                transform-origin: 50% 43.1%;
+            }
+            .hex4 {
+                background-size: cover;
+            }
+        </style>
 
-      #hexagon {
-        position: relative;
-        background-position: center;
-      }
+        <proportional-height-box width="100" height="100">
+            <div id="hexa" class="hexa">
+                <div class="hex1">
+                    <div class="hex2">
+                        <div id="bgRotater" class="hex3">
+                            <div id="background" class="hex4">
+                                <content></content>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </proportional-height-box>
+    </template>
 
-      #hexagonAfter {
-        position: absolute;
-        left: 0;
-        z-index: 2;
-        background: inherit;
-      }
+    <script>
+        (function() {
+            'use strict';
 
-      #hextop, #hexbottom {
-        position: absolute;
-        z-index: 1;
-        overflow: hidden;
-        background: inherit;
-      }
+            Polymer({
 
-      #hextopAfter, #hexbottomAfter {
-        position: absolute;
-        transform-origin: 0 0;
-        background: inherit;
-      }
-      #hextopAfter {
-        background-position: center top;
-      }
-      #hexbottomAfter {
-        background-position: center bottom;
-      }
-    </style>
+                is: 'hexagon-card',
 
-    <div id="hexagon">
-      <div id="hextop"><div id="hextopAfter"></div></div>
-      <div id="hexbottom"><div id="hexbottomAfter"></div></div>
+                properties: {
+                    bgColor: {
+                        type: String,
+                        value: '#eee',
+                        observer: 'bgColorChanged'
+                    },
+                    bgImage: {
+                        type: String,
+                        value: '',
+                        observer: 'bgImageChanged'
+                    },
+                    rotate: {
+                        type: Number,
+                        value: 0,
+                        observer: 'rotateChanged'
+                    }
+                },
 
-      <content></content>
+                bgColorChanged: function(newValue, oldValue) {
+                    this.$.background.style.backgroundColor = newValue;
+                },
+                bgImageChanged: function(newValue, oldValue) {
+                    this.$.background.style.backgroundImage = `url(${newValue})`;
+                },
 
-      <div id="hexagonAfter"></div>
-    </div>
-  </template>
+                rotateChanged: function(newValue, oldValue) {
+                    this.$.hexa.style.transform = `rotate(${newValue + 120}deg)`;
+                    this.$.bgRotater.style.transform = `rotate(${-newValue}deg) translateY(-7%)`;
+                }
 
-  <script>
-    (function() {
-      'use strict';
-      const sqrt2 = Math.sqrt(2);
-      const sqrt3 = Math.sqrt(3);
-      const scaleFactor = Math.tan(30 * Math.PI / 180);
-      const scaleY = 1 / scaleFactor;
+            });
 
-      Polymer({
-
-        is: 'hexagon-card',
-
-        properties: {
-          width: {
-            type: Number,
-            value: 300,
-            observer: '_widthChanged'
-          },
-          borderWidth: {
-            type: Number,
-            value: 0.0,
-            observer: '_borderWidthChanged'
-          },
-          borderColor: {
-            type: String,
-            value: 'transparent',
-            observer: '_borderColorChanged'
-          },
-          bgColor: {
-            type: String,
-            value: '#eee',
-            observer: '_backgroundColorChanged'
-          },
-          bgImage: {
-            type: String,
-            value: '',
-            observer: '_backgroundImageChanged'
-          }
-        },
-
-        ready: function() {
-          for (let elm of [this.$.hextop, this.$.hexbottom]) {
-            elm.style.transform = `scaleY(${scaleFactor.toFixed(4)}) rotate(-45deg)`;
-          }
-        },
-
-        _widthChanged: function(newValue, oldValue) {
-          this._computeDimensions(newValue);
-          this._computeHexTopBottom(newValue, this.borderWidth);
-        },
-
-        _borderWidthChanged: function(newValue, oldValue) {
-          this._computeAfterTopOffset(newValue);
-          this._computeHexTopBottom(this.width, newValue);
-          this._computeBorder(newValue, this.borderColor);
-        },
-
-        _borderColorChanged: function(newValue, oldValue) {
-          this._computeBorder(this.borderWidth, newValue);
-        },
-
-        _backgroundColorChanged: function(newValue, oldValue) {
-          this.$.hexagon.style.backgroundColor = newValue;
-        },
-
-        _backgroundImageChanged: function(newValue, oldValue) {
-          this.$.hexagon.style.backgroundImage = `url(${newValue})`;
-        },
-
-        _getHeight: function(width) {
-          return width / sqrt3;
-        },
-
-        _computeAfterTopOffset: function(borderWidth) {
-          var top = (borderWidth * scaleFactor).toFixed(4);
-          this.$.hexagonAfter.style.top = top;
-        },
-
-        _computeDimensions: function(width) {
-          var height = this._getHeight(width);
-          var margin = height / 2;
-
-          var hexagon = this.$.hexagon;
-          hexagon.style.width = `${width}px`;
-          hexagon.style.height = `${height.toFixed(2)}px`;
-          hexagon.style.margin = `${margin.toFixed(2)}px 0`;
-        },
-
-        _computeHexTopBottom: function(width, borderWidth) {
-          var capWidth = width / sqrt2;
-          var left = (width - capWidth) / 2 - borderWidth;
-          var height = this._getHeight(width);
-          var afterWidth = width - (borderWidth * 2);
-          var afterHeight = height - (borderWidth * this.scaleFactor * 2);
-          var offset = (0 - (width / sqrt2 / 2)).toFixed(4);
-          var borderOffset =  borderWidth / sqrt3;
-          var translateY = -this._getHeight(width) / 2 + borderOffset;
-          var bgsize = height * 2 - borderOffset * 4;
-          this.$.hexagon.style.backgroundSize = `auto ${bgsize.toFixed(4)}px`;
-
-          var topElm = this.$.hextop;
-          var bottomElm = this.$.hexbottom;
-          for (let elm of [topElm, bottomElm]) {
-            elm.style.width = `${capWidth.toFixed(2)}px`;
-            elm.style.height = `${capWidth.toFixed(2)}px`;
-            elm.style.left = `${left.toFixed(2)}px`;
-          }
-
-          topElm.style.top = `${offset}px`;
-          bottomElm.style.bottom = `${offset}px`;
-
-          var afterWidth = width - borderWidth * 2;
-          var afterHeight = this._getHeight(width) - borderWidth * scaleFactor * 2;
-          for (let afterElm of [this.$.hextopAfter, this.$.hexbottomAfter]) {
-            afterElm.style.width = `${afterWidth}px`;
-            afterElm.style.height = `${afterHeight}px`;
-            afterElm.style.transform = `rotate(45deg) scaleY(${scaleY.toFixed(4)}) translateY(${translateY.toFixed(4)}px)`;
-          }
-          let afterElm = this.$.hexagonAfter;
-          afterElm.style.width = `${afterWidth}px`;
-          afterElm.style.height = `${afterHeight}px`;
-        },
-
-        _computeBorder: function(width, color) {
-          var border = `solid ${width}px ${color}`;
-
-          var elm = this.$.hextop;
-          elm.style.borderTop = border;
-          elm.style.borderRight = border;
-
-          elm = this.$.hexbottom;
-          elm.style.borderBottom = border;
-          elm.style.borderLeft = border;
-        }
-
-      });
-
-    }());
-  </script>
+        }());
+    </script>
 </dom-module>
