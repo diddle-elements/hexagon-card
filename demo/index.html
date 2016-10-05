@@ -29,9 +29,42 @@
               text-align: center;
             }
           </style>
-          <hexagon-card id="card" bg-image="http://placekitten.com/500/500">
+          <hexagon-card bg-image="http://placekitten.com/500/500">
               <p class="styleme">TEST</p>
           </hexagon-card>
+        </template>
+      </demo-snippet>
+
+      <h3>Rotating hexagon-card Demo</h3>
+      <demo-snippet>
+        <template>
+          <style>
+            .styleme {
+              width: 50%;
+              background-color: rgba(0,0,0,0.4);
+              font-size: 3em;
+              color: red;
+              text-align: center;
+            }
+          </style>
+          <hexagon-card id="rotating-card" bg-image="http://placekitten.com/500/500">
+            <p class="styleme">TEST</p>
+          </hexagon-card>
+          <script>
+            (function() {
+              var rotation = 0;
+              var hex = document.getElementById('rotating-card');
+              function step(timestamp) {
+                  rotation += 1;
+                  if (360 === rotation) {
+                      rotation = 0;
+                  }
+                  hex.rotate = rotation;
+                  window.requestAnimationFrame(step);
+              }
+              window.requestAnimationFrame(step);
+            }());
+          </script>
         </template>
       </demo-snippet>
     </div>
