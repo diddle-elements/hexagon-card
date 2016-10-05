@@ -80,16 +80,19 @@ Subsequently refactored using http://codepen.io/4dgaurav/pen/KDbBe/ by Geoffrey 
                 is: 'hexagon-card',
 
                 properties: {
+                    /* Background color of hexagon interior */
                     bgColor: {
                         type: String,
                         value: '#eee',
                         observer: '_bgColorChanged'
                     },
+                    /* Background image for hexagon interior */
                     bgImage: {
                         type: String,
                         value: '',
                         observer: '_bgImageChanged'
                     },
+                    /* Number of degrees to rotate the hexagon */
                     rotate: {
                         type: Number,
                         value: 0,
@@ -97,13 +100,16 @@ Subsequently refactored using http://codepen.io/4dgaurav/pen/KDbBe/ by Geoffrey 
                     }
                 },
 
+                /* Set the background when the bgColor attribute is changed */
                 _bgColorChanged: function(newValue, oldValue) {
                     this.$.background.style.backgroundColor = newValue;
                 },
+                /* Set the background when the bgImage attribute is changed */
                 _bgImageChanged: function(newValue, oldValue) {
                     this.$.background.style.backgroundImage = `url(${newValue})`;
                 },
-
+                
+                /* Rotate the hexagon when the rotate attribute is changed */
                 _rotateChanged: function(newValue, oldValue) {
                     this.$.hexa.style.transform = `rotate(${newValue + 120}deg)`;
                     this.$.bgRotater.style.transform = `rotate(${-newValue}deg) translateY(-7%)`;
