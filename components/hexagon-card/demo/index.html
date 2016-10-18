@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <head>
+    <title>hexagon-card demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+
+    <link rel="import" href="../hexagon-card.html">
+
+    <style is="custom-style" include="demo-pages-shared-styles">
+    </style>
+
+    <style>
+    .horizontal-section-container .centered {
+      flex: 1 100%;
+    }
+    demo-snippet {
+      display: flex;
+      flex-direction: column;
+    }
+    </style>
+  </head>
+  <body>
+
+    <div class="horizontal-section-container">
+      <div class="centered">
+        <h3>Basic hexagon-card Demo</h3>
+        <demo-snippet>
+          <template>
+            <style>
+              .styleme {
+                width: 50%;
+                background-color: rgba(0,0,0,0.4);
+                font-size: 3em;
+                color: red;
+                text-align: center;
+              }
+              .background {
+                background-image: url('https://placekitten.com/500/500');
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+              }
+            </style>
+            <hexagon-card>
+              <div class="background">
+                <p class="styleme">TEST</p>
+              </div>
+            </hexagon-card>
+          </template>
+        </demo-snippet>
+      </div>
+      <div class="centered">
+        <h3>Rotating hexagon-card Demo</h3>
+        <demo-snippet>
+          <template>
+            <style>
+              .styleme {
+                width: 50%;
+                background-color: rgba(0,0,0,0.4);
+                font-size: 3em;
+                color: red;
+                text-align: center;
+              }
+              .background {
+                background-image: url('https://placekitten.com/500/500');
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+              }
+            </style>
+            <hexagon-card id="rotating-card">
+              <div class="background">
+                <p class="styleme">TEST</p>
+              </div>
+            </hexagon-card>
+            <script>
+              (function() {
+                var rotation = 0;
+                var hex = document.getElementById('rotating-card');
+                function step(timestamp) {
+                  rotation += 1;
+                  if (360 === rotation) {
+                    rotation = 0;
+                  }
+                  hex.rotate = rotation;
+                  window.requestAnimationFrame(step);
+                }
+                window.requestAnimationFrame(step);
+              }());
+            </script>
+          </template>
+        </demo-snippet>
+      </div>
+    </div>
+
+  </body>
+</html>
