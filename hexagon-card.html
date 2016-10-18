@@ -23,18 +23,22 @@ Subsequently refactored using an SVG-based clip-path applied with CSS.
                 overflow: hidden;
             }
 
+            .hexagon.rounded {
+              -webkit-clip-path: url(#rounded-hexclip);
+              -moz-clip-path: url(#rounded-hexclip);
+              clip-path: url(#rounded-hexclip);
+            }
+            .hexagon.pointy {
+              -webkit-clip-path: url(#pointy-hexclip);
+              -moz-clip-path: url(#pointy-hexclip);
+              clip-path: url(#pointy-hexclip);
+            }
             #hexagon {
-                -webkit-clip-path: url(#rounded-hexclip);
-                -moz-clip-path: url(#rounded-hexclip);
-                clip-path: url(#rounded-hexclip);
                 will-change: transform;
             }
             #inner-hexagon {
-                -webkit-clip-path: url(#rounded-hexclip);
-                -moz-clip-path: url(#rounded-hexclip);
-                clip-path: url(#rounded-hexclip);
-                position: relative;
                 background-color: white;
+                position: relative;
             }
             #content {
                 /*will-change: transform;*/
@@ -43,6 +47,7 @@ Subsequently refactored using an SVG-based clip-path applied with CSS.
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                position: relative;
             }
         </style>
         <svg width="0" height="0">
@@ -56,12 +61,12 @@ Subsequently refactored using an SVG-based clip-path applied with CSS.
             </defs>
         </svg>
         <proportional-height-box width="200" height="200">
-            <div id="hexagon">
-              <div id="inner-hexagon">
-                <div id="content">
-                    <content></content>
+            <div id="hexagon" class="hexagon">
+                <div id="inner-hexagon" class="hexagon">
+                    <div id="content">
+                        <content></content>
+                    </div>
                 </div>
-              </div>
             </div>
         </proportional-height-box>
     </template>
@@ -93,35 +98,57 @@ Subsequently refactored using an SVG-based clip-path applied with CSS.
                         type: String,
                         value: '#000',
                         observer: '_onBorderColor'
+                    },
+                    /* Hexagon corner-style can be either `pointy` or `rounded` */
+                    hexagonType: {
+                        type: String,
+                        value: 'rounded',
+                        observer: '_onHexType'
                     }
                 },
 
                 _onRotate: function(newValue, oldValue) {
+                    var hex = this.$['hexagon'];
+                    var content = this.$['content'];
                     function doRotate() {
-                        this.$['hexagon'].style.transform = `rotate(${newValue}deg)`;
-                        this.$['content'].style.transform = `rotate(-${newValue}deg)`;
+                        hex.style.transform = `rotate(${newValue}deg)`;
+                        content.style.transform = `rotate(-${newValue}deg)`;
                     }
-                    window.requestAnimationFrame(doRotate.bind(this));
+                    window.requestAnimationFrame(doRotate);
                 },
                 _onBorderWidth: function(newValue, oldValue) {
+                    var hex = this.$['hexagon'];
+                    var content = this.$['inner-hexagon'];
                     function doBorder() {
-                        var hex = this.$['hexagon'];
-                        var content = this.$['inner-hexagon'];
                         var borderWidth = `${newValue}px`;
                         var innerHeight = (hex.offsetHeight - (newValue * 2)) + 'px';
-                        console.log(innerHeight);
                         content.style.top = borderWidth;
                         content.style.left = borderWidth;
                         content.style.width = innerHeight;
                         content.style.height = innerHeight;
                     }
-                    window.requestAnimationFrame(doBorder.bind(this));
+                    window.requestAnimationFrame(doBorder);
                 },
                 _onBorderColor: function(newValue, oldValue) {
+                  var hex = this.$['hexagon'];
                   function doColor() {
-                    this.$['hexagon'].style.background = newValue;
+                    hex.style.background = newValue;
                   }
-                  window.requestAnimationFrame(doColor.bind(this));
+                  window.requestAnimationFrame(doColor);
+                },
+
+                _onHexType: function(newValue, oldValue) {
+                  if ((newValue !== 'rounded' && newValue !== 'pointy') || newValue === oldValue) {
+                    return;
+                  }
+                  var hexagons = [this.$['hexagon'],this.$['inner-hexagon']];
+                  function changeType() {
+                    for (let hexagon of hexagons) {
+                      hexagon.classList.remove(oldValue);
+                      hexagon.classList.add(newValue);
+                    }
+                  }
+                  window.requestAnimationFrame(changeType);
                 }
 
             });
