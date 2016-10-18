@@ -4,9 +4,13 @@
 `hexagon-card`
 A Hexagon-shaped card
 
+If you desire a background color or image other than the white default you should add this to a child element with 100% width and height inserted using the slot mechanism like the demo.
+
 Originally based upon the code by Brenna O'Brien at https://github.com/brenna/csshexagon (Brenna's website is http://brennaobrien.com)
 
 Subsequently refactored using http://codepen.io/4dgaurav/pen/KDbBe/ by Geoffrey Crofte (http://twitter.com/geoffrey_crofte)
+
+Subsequently refactored using an SVG-based clip-path applied with CSS.
 
 @demo demo/index.html
 -->
@@ -18,55 +22,46 @@ Subsequently refactored using http://codepen.io/4dgaurav/pen/KDbBe/ by Geoffrey 
                 display: block;
                 overflow: hidden;
             }
-            ::content {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-            }
 
-            #hexa.hexa, .hex1, .hex2, .hex3, .hex4 {
-                margin: 0 auto;
-                transform-origin: 50% 50%;
-                overflow: hidden;
+            #hexagon {
+                -webkit-clip-path: url(#rounded-hexclip);
+                -moz-clip-path: url(#rounded-hexclip);
+                clip-path: url(#rounded-hexclip);
+                will-change: transform;
+            }
+            #inner-hexagon {
+                -webkit-clip-path: url(#rounded-hexclip);
+                -moz-clip-path: url(#rounded-hexclip);
+                clip-path: url(#rounded-hexclip);
+                position: relative;
+                background-color: white;
+            }
+            #content {
+                /*will-change: transform;*/
                 width: 100%;
                 height: 100%;
-            }
-            #hexa.hexa {
-                height: 86.2%;
-                will-change: transform;
-            }
-            .hex1 {
-                transform: rotate(-60deg);
-            }
-            .hex2 {
-                transform: rotate(-60deg);
-            }
-            .hex3 {
-                will-change: transform;
-                height: 116%;
-                transform-origin: 50% 43.1%;
-            }
-            .hex4 {
-                background-size: cover;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
         </style>
-
-        <proportional-height-box width="100" height="100">
-            <div id="hexa" class="hexa">
-                <div class="hex1">
-                    <div class="hex2">
-                        <div id="bgRotater" class="hex3">
-                            <div id="background" class="hex4">
-                                <content></content>
-                            </div>
-                        </div>
-                    </div>
+        <svg width="0" height="0">
+            <defs>
+                <clipPath id="rounded-hexclip" clipPathUnits="objectBoundingBox">
+                    <path d="M.9232051.4l.0147334.031596.0090231.0336744L.95.5.9469616.5347296.9379385.568404.9232051.6l-.125.2165064-.0199962.0285575-.0246514.0246513L.725.8897114.693404.9044449l-.0336744.009023L.625.9165064h-.25L.3402704.9134679.306596.9044449.275.8897114.2464425.8697152.2217911.8450639.2017949.8165064.0767949.6.0620615.568404.0530384.5347296.05.5.0530384.4652704.0620615.431596.0767949.4l.125-.2165064.0199962-.0285575.0246514-.0246513L.275.1102886.306596.0955551l.0336744-.009023L.375.0834936h.25l.0347296.0030385.0336744.009023L.725.1102886l.0285575.0199962.0246514.0246513.0199962.0285575"/>
+                </clipPath>
+                <clipPath id="pointy-hexclip" clipPathUnits="objectBoundingBox">
+                    <path d="M.95.5L.725.8897114h-.45L.05.5.275.1102886h.45z"/>
+                </clipPath>
+            </defs>
+        </svg>
+        <proportional-height-box width="200" height="200">
+            <div id="hexagon">
+              <div id="inner-hexagon">
+                <div id="content">
+                    <content></content>
                 </div>
+              </div>
             </div>
         </proportional-height-box>
     </template>
@@ -80,39 +75,53 @@ Subsequently refactored using http://codepen.io/4dgaurav/pen/KDbBe/ by Geoffrey 
                 is: 'hexagon-card',
 
                 properties: {
-                    /* Background color of hexagon interior */
-                    bgColor: {
-                        type: String,
-                        value: '#eee',
-                        observer: '_bgColorChanged'
-                    },
-                    /* Background image for hexagon interior */
-                    bgImage: {
-                        type: String,
-                        value: '',
-                        observer: '_bgImageChanged'
-                    },
                     /* Number of degrees to rotate the hexagon */
                     rotate: {
                         type: Number,
                         value: 0,
-                        observer: '_rotateChanged'
+                        observer: '_onRotate'
+                    },
+
+                    /* Number of pixels for the width of the border around the hexagon */
+                    borderWidth: {
+                        type: Number,
+                        value: '1',
+                        observer: '_onBorderWidth'
+                    },
+                    /* Color of the border around the hexagon. Any valid CSS Color is acceptible. */
+                    borderColor: {
+                        type: String,
+                        value: '#000',
+                        observer: '_onBorderColor'
                     }
                 },
 
-                /* Set the background when the bgColor attribute is changed */
-                _bgColorChanged: function(newValue, oldValue) {
-                    this.$.background.style.backgroundColor = newValue;
+                _onRotate: function(newValue, oldValue) {
+                    function doRotate() {
+                        this.$['hexagon'].style.transform = `rotate(${newValue}deg)`;
+                        this.$['content'].style.transform = `rotate(-${newValue}deg)`;
+                    }
+                    window.requestAnimationFrame(doRotate.bind(this));
                 },
-                /* Set the background when the bgImage attribute is changed */
-                _bgImageChanged: function(newValue, oldValue) {
-                    this.$.background.style.backgroundImage = `url(${newValue})`;
+                _onBorderWidth: function(newValue, oldValue) {
+                    function doBorder() {
+                        var hex = this.$['hexagon'];
+                        var content = this.$['inner-hexagon'];
+                        var borderWidth = `${newValue}px`;
+                        var innerHeight = (hex.offsetHeight - (newValue * 2)) + 'px';
+                        console.log(innerHeight);
+                        content.style.top = borderWidth;
+                        content.style.left = borderWidth;
+                        content.style.width = innerHeight;
+                        content.style.height = innerHeight;
+                    }
+                    window.requestAnimationFrame(doBorder.bind(this));
                 },
-                
-                /* Rotate the hexagon when the rotate attribute is changed */
-                _rotateChanged: function(newValue, oldValue) {
-                    this.$.hexa.style.transform = `rotate(${newValue + 120}deg)`;
-                    this.$.bgRotater.style.transform = `rotate(${-newValue}deg) translateY(-7%)`;
+                _onBorderColor: function(newValue, oldValue) {
+                  function doColor() {
+                    this.$['hexagon'].style.background = newValue;
+                  }
+                  window.requestAnimationFrame(doColor.bind(this));
                 }
 
             });
