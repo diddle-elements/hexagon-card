@@ -2,15 +2,8 @@
   "name": "hexagon-card",
   "description": "A Hexagon-shaped card",
   "main": "hexagon-card.html",
-  "keywords": [
-    "polymer",
-    "web-components",
-    "hexagon",
-    "card"
-  ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0",
-    "proportional-height-box": "^1.0.1"
+    "polymer": "Polymer/polymer#^1.4.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
